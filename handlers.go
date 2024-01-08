@@ -49,3 +49,16 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 		return
 	}
 }
+
+// Retrieve album with provided ID
+func getOneAlbum(c *gin.Context) {
+	id := c.Param("id")
+
+	for _, a := range albumPersistentStorage {
+		if a.ID == id {
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Item ID not found", "id": id})
+}

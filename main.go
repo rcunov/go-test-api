@@ -51,6 +51,7 @@ func main() {
 	// Define API endpoints
 	router.GET("/albums", getAllAlbums)
 	router.POST("/upload", uploadOneOrManyAlbums)
+	router.GET("/albums/:id", getOneAlbum)
 	// TODO: Add GET method for single record
 	// TODO: https://go.dev/doc/tutorial/web-service-gin#specific_item
 
