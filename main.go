@@ -51,6 +51,7 @@ func main() {
 	// Define API endpoints
 	router.GET("/albums", getAllAlbums)
 	router.POST("/upload", uploadOneOrManyAlbums)
+	router.GET("/albums/:id", getOneAlbum)
 	// TODO: Add GET method for single record
 	// TODO: https://go.dev/doc/tutorial/web-service-gin#specific_item
 
@@ -65,14 +66,14 @@ func main() {
 		isValid := isValidPort(listenPort) // Check if it's a valid port number
 		if isValid {
 			listenAddr := fmt.Sprintf("0.0.0.0:%s", listenPort)
+			fmt.Printf("Currently listening on 0.0.0.0:%s\n", listenPort)
 			router.Run(listenAddr)
-			log.Printf("Currently listening on 0.0.0.0:%s", listenPort)
 		} else {
-			log.Fatalf("ERROR! listenPort is invalid. Currently set to: %s", listenPort)
+			log.Fatalf("ERROR! listenPort is invalid. Currently set to: `%s`", listenPort)
 			// I don't like the default log output of this, but it's kind of a pain to change. Maybe later
 		}
 	} else {
+		fmt.Println("Currently listening on 0.0.0.0:8117")
 		router.Run("0.0.0.0:8117")
-		log.Println("Currently listening on 0.0.0.0:8117")
 	}
 }
