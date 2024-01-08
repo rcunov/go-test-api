@@ -3,6 +3,7 @@ package main
 // Import dependencies
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -70,16 +71,18 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 }
 
 // Check if port set by user is valid
-func isValidPort(portStr string) (int, bool) {
-	if port, err := strconv.Atoi(portStr); err != nil {
-		return 0, false
+func isValidPort(portStr string) bool {
+	port, err := strconv.Atoi(portStr)
+
+	if err != nil {
+		return false
 	}
 
 	if port >= 1 && port <= 65535 {
-		return port, true
+		return true
 	}
 
-	return 0, false
+	return false
 }
 
 func main() {
@@ -100,12 +103,17 @@ func main() {
 	// Example way to set trusted proxies if I change my mind
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
-	// TODO: Validate port before applying router config
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
-	listenPort, isSet := os.LookupEnv("listenPort")
+	listenPort, isSet := os.LookupEnv("listenPort") // Check if $listenPort is set and get value if so
 	if isSet {
-		listenAddr := fmt.Sprintf("0.0.0.0:%s", listenPort)
-		router.Run(listenAddr)
+		isValid := isValidPort(listenPort) // Check if it's a valid port number
+		if isValid {
+			listenAddr := fmt.Sprintf("0.0.0.0:%s", listenPort)
+			router.Run(listenAddr)
+		} else {
+			log.Fatalf("ERROR! listenPort is invalid. Currently set to: %s", listenPort)
+			// I don't like the default log output of this, but it's kind of a pain to change. Maybe later
+		}
 	} else {
 		router.Run("0.0.0.0:8117")
 	}
