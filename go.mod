@@ -1,4 +1,4 @@
-module rcunov/web-service-gin
+module go-test-api
 
 go 1.21.5
 
