@@ -2,7 +2,9 @@ package main
 
 // Import dependencies
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +30,6 @@ var albumPersistentStorage = []Album{
 // Get everything from persistent storage
 func getAllAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albumPersistentStorage)
-	// c.JSON(http.StatusOK, albums)
 }
 
 // Receive data from user, parse whether it contains one or more records, and store them
@@ -85,6 +86,13 @@ func main() {
 	router.SetTrustedProxies(nil)
 	// Example way to set trusted proxies if I change my mind
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
-	// Listen on any address
-	router.Run("0.0.0.0:8117")
+
+	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
+	listenPort, isSet := os.LookupEnv("listenPort")
+	if isSet {
+		listenAddr := fmt.Sprintf("0.0.0.0:%s", listenPort)
+		router.Run(listenAddr)
+	} else {
+		router.Run("0.0.0.0:8117")
+	}
 }
