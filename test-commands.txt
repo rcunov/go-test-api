@@ -1,0 +1,5 @@
+curl http://localhost:8117/albums
+
+curl http://localhost:8117/upload --include --header "Content-Type: application/json" --request "POST" --data '[{"title":"Title1","artist":"Artist1","price":56.99},{"title":"Title2","artist":"Artist2","price":19.99}]'
+
+curl http://localhost:8117/upload --include --header "Content-Type: application/json" --request "POST" --data '{"title": "test3","artist": "John Coltrane","price": 56.99}'

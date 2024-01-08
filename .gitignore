@@ -1,0 +1,6 @@
+# Ignore built binaries for testing
+*/*.exe
+*
+!/**/
+!*.*
+!Dockerfile
