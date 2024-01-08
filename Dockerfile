@@ -14,8 +14,6 @@ FROM scratch
 
 WORKDIR /
 
-EXPOSE 8117
-
 COPY --from=build-stage /go-test-api /go-test-api
 
 ENTRYPOINT [ "/go-test-api" ]
