@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +24,21 @@ var albumPersistentStorage = []Album{
 	{ID: "2", Title: "Bleed the Future", Artist: "AUM", Price: 19.99},
 	{ID: "3", Title: "Super Hexagon", Artist: "Chipzel", Price: 8.0},
 	{ID: "4", Title: "Hirschbrunnen", Artist: "delving", Price: 14.99},
+}
+
+// Check if port set by user is valid
+func isValidPort(portStr string) bool {
+	port, err := strconv.Atoi(portStr)
+
+	if err != nil {
+		return false
+	}
+
+	if port >= 1 && port <= 65535 {
+		return true
+	}
+
+	return false
 }
 
 func main() {

@@ -49,18 +49,3 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 		return
 	}
 }
-
-// Check if port set by user is valid
-func isValidPort(portStr string) bool {
-	port, err := strconv.Atoi(portStr)
-
-	if err != nil {
-		return false
-	}
-
-	if port >= 1 && port <= 65535 {
-		return true
-	}
-
-	return false
-}
