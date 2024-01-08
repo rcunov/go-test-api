@@ -10,7 +10,7 @@ COPY *.go ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /go-test-api
 
-FROM debian:latest
+FROM scratch
 
 WORKDIR /
 
