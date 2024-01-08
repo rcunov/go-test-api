@@ -66,11 +66,13 @@ func main() {
 		if isValid {
 			listenAddr := fmt.Sprintf("0.0.0.0:%s", listenPort)
 			router.Run(listenAddr)
+			log.Printf("Currently listening on 0.0.0.0:%s", listenPort)
 		} else {
 			log.Fatalf("ERROR! listenPort is invalid. Currently set to: %s", listenPort)
 			// I don't like the default log output of this, but it's kind of a pain to change. Maybe later
 		}
 	} else {
 		router.Run("0.0.0.0:8117")
+		log.Println("Currently listening on 0.0.0.0:8117")
 	}
 }
