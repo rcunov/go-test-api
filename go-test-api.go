@@ -69,6 +69,19 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 	}
 }
 
+// Check if port set by user is valid
+func isValidPort(portStr string) (int, bool) {
+	if port, err := strconv.Atoi(portStr); err != nil {
+		return 0, false
+	}
+
+	if port >= 1 && port <= 65535 {
+		return port, true
+	}
+
+	return 0, false
+}
+
 func main() {
 	// Set release mode
 	gin.SetMode(gin.ReleaseMode)
@@ -87,6 +100,7 @@ func main() {
 	// Example way to set trusted proxies if I change my mind
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
+	// TODO: Validate port before applying router config
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
 	listenPort, isSet := os.LookupEnv("listenPort")
 	if isSet {
