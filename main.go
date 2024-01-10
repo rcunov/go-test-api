@@ -33,11 +33,10 @@ func isValidPort(portStr string) bool {
 	if err != nil {
 		return false
 	}
-
 	if port >= 1 && port <= 65535 {
 		return true
 	}
-
+	// If the port is an integer that is not between 1-65535, then return false
 	return false
 }
 
@@ -52,8 +51,6 @@ func main() {
 	router.GET("/albums", getAllAlbums)
 	router.POST("/upload", uploadOneOrManyAlbums)
 	router.GET("/albums/:id", getOneAlbum)
-	// TODO: Add GET method for single record
-	// TODO: https://go.dev/doc/tutorial/web-service-gin#specific_item
 
 	// Disable proxy warning message
 	router.SetTrustedProxies(nil)
@@ -61,6 +58,7 @@ func main() {
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
+	// I could maybe put this validation in an init() function, but it ain't broke yet...
 	listenPort, isSet := os.LookupEnv("listenPort") // Check if $listenPort is set and get value if so
 	if isSet {
 		isValid := isValidPort(listenPort) // Check if it's a valid port number
