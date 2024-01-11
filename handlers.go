@@ -76,12 +76,14 @@ func dbUpload(c *gin.Context) {
 	dataErr := c.ShouldBindBodyWith(&upload, binding.JSON)
 	if dataErr != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": dataErr.Error()})
+		return
 	}
 
 	// Try to open the DB
 	db, openErr := sql.Open("sqlite", "local.db")
 	if openErr != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": openErr.Error()})
+		return
 	}
 
 	// Try to insert into the DB
@@ -89,14 +91,16 @@ func dbUpload(c *gin.Context) {
 	result, execErr := db.Exec(execString)
 	if execErr != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": execErr.Error()})
+		return
 	}
 
 	// Try to get the last autoincrement row ID
 	lastIdInt, idErr := result.LastInsertId()
-	if idErr == nil { // Put the ID back in the response to the user
-		upload.ID = strconv.FormatInt(lastIdInt, 10)
-	} else {
+	if idErr != nil { // Put the ID back in the response to the user
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": idErr.Error()})
+		return
+	} else {
+		upload.ID = strconv.FormatInt(lastIdInt, 10)
 	}
 
 	// Print the result back to the user
