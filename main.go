@@ -42,14 +42,14 @@ func isValidPort(portStr string) bool {
 
 // Declare variables used for data validation with global scope - access in both init() and main()
 var listenPort string
-var isSet bool
+var listenPortIsSet bool
 
 // Perform data validation
 func init() {
-	listenPort, isSet = os.LookupEnv("listenPort") // Check if $listenPort is set and get value if so
-	if isSet {
-		isValid := isValidPort(listenPort) // Check if it's a valid port number
-		if !isValid {
+	listenPort, listenPortIsSet = os.LookupEnv("listenPort") // Check if $listenPort is set and get value if so
+	if listenPortIsSet {
+		listenPortIsValid := isValidPort(listenPort) // Check if it's a valid port number
+		if !listenPortIsValid {
 			log.Fatalf("ERROR! listenPort is invalid. Currently set to: `%s`", listenPort)
 			// I don't like the default log output of this, but it's kind of a pain to change. Maybe later
 		}
@@ -75,9 +75,9 @@ func main() {
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
-	if isSet {
-		fmt.Printf("Currently listening on 0.0.0.0:%s\n", listenPort)
+	if listenPortIsSet {
 		listenAddr := fmt.Sprintf("0.0.0.0:%s", listenPort)
+		fmt.Printf("Currently listening on %s\n", listenAddr)
 		router.Run(listenAddr)
 	} else {
 		fmt.Println("Currently listening on 0.0.0.0:8117")
