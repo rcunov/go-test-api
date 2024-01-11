@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -87,8 +86,7 @@ func dbUpload(c *gin.Context) {
 	}
 
 	// Try to insert into the DB
-	execString := fmt.Sprintf(`INSERT INTO albums (title, artist, price) VALUES ('%s', '%s', %f);`, upload.Title, upload.Artist, upload.Price)
-	result, execErr := db.Exec(execString)
+	result, execErr := db.Exec(`INSERT INTO albums (title, artist, price) VALUES (?, ?, ?);`, upload.Title, upload.Artist, upload.Price)
 	if execErr != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": execErr.Error()})
 		return
