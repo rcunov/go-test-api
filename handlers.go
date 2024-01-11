@@ -106,3 +106,36 @@ func dbUploadOneAlbum(c *gin.Context) {
 	// Print the result back to the user
 	c.IndentedJSON(http.StatusOK, upload)
 }
+
+// Get a record from the DB
+func dbGetOneAlbum(c *gin.Context) {
+	var result Album
+	id := c.Param("id")
+
+	// Check if the ID provided by user is a valid primary key
+	if _, dataErr := strconv.Atoi(id); dataErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "ID provided is invalid", "id": id})
+		return
+	}
+
+	// Try to open the DB
+	db, openErr := sql.Open("sqlite", "local.db")
+	if openErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Could not open database file", "msg": openErr.Error()})
+		return
+	}
+
+	// Try to read from the DB
+	row := db.QueryRow("SELECT * FROM albums WHERE id = ?", id)
+	if queryErr := row.Scan(&result.ID, &result.Title, &result.Artist, &result.Price); queryErr != nil {
+		if queryErr == sql.ErrNoRows {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Item ID not found", "id": id})
+			return
+		}
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": queryErr.Error()})
+		return
+	}
+
+	// Print the result back to the user
+	c.IndentedJSON(http.StatusOK, result)
+}
