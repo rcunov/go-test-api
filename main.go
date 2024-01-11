@@ -64,10 +64,13 @@ func main() {
 	var router = gin.Default()
 
 	// Define API endpoints
-	router.GET("/albums", getAllAlbums)
-	router.POST("/upload", uploadOneOrManyAlbums)
-	router.GET("/albums/:id", getOneAlbum)
-	router.POST("/test", dbUpload)
+	router.GET("/slice", getAllAlbums)                  // The functions at the /slice endpoint
+	router.GET("/slice/:id", getOneAlbum)               // are for playing around with the test
+	router.POST("/slice/upload", uploadOneOrManyAlbums) // data in the albumPersistentStorage slice
+
+	router.POST("/db/upload", dbUploadOneAlbum)            // The functions at the /db endpoint
+	// TODO: Implement a dbGetAllAlbums() handler          // are for playing around with the test
+	// TODO: Implement a dbUploadOneOrManyAlbums() handler // data in the local.db sqlite database
 
 	// Disable proxy warning message
 	router.SetTrustedProxies(nil)

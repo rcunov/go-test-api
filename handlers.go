@@ -16,6 +16,19 @@ func getAllAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albumPersistentStorage)
 }
 
+// Retrieve album with provided ID
+func getOneAlbum(c *gin.Context) {
+	id := c.Param("id")
+
+	for _, a := range albumPersistentStorage {
+		if a.ID == id {
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Item ID not found", "id": id})
+}
+
 // Receive data from user, parse whether it contains one or more records, and store them
 func uploadOneOrManyAlbums(c *gin.Context) {
 	// Empty var and slice to store request payload
@@ -53,22 +66,11 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 	}
 }
 
-// Retrieve album with provided ID
-func getOneAlbum(c *gin.Context) {
-	id := c.Param("id")
-
-	for _, a := range albumPersistentStorage {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Item ID not found", "id": id})
-}
-
 // Save data from the user to a local db file
 // Error handling in this function is ugly - not sure if there's a way to make it prettier
-func dbUpload(c *gin.Context) {
+func dbUploadOneAlbum(c *gin.Context) {
+	// Use this variable as hacky data validation - if the data from the user fits into the schema for the Album struct,
+	// it'll match the database schema and shouldn't give any data type issues when running the INSERT statement
 	var upload Album
 
 	// Try to fit in the POSTed data with the Album struct schema
