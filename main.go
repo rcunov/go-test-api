@@ -49,9 +49,7 @@ func init() {
 	listenPort, isSet = os.LookupEnv("listenPort") // Check if $listenPort is set and get value if so
 	if isSet {
 		isValid := isValidPort(listenPort) // Check if it's a valid port number
-		if isValid {
-			return // Go to main()
-		} else {
+		if !isValid {
 			log.Fatalf("ERROR! listenPort is invalid. Currently set to: `%s`", listenPort)
 			// I don't like the default log output of this, but it's kind of a pain to change. Maybe later
 		}
