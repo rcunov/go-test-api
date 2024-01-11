@@ -1,8 +1,12 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
+
+	_ "modernc.org/sqlite"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -45,7 +49,7 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 		// Return data back to user for verification
 		c.IndentedJSON(http.StatusCreated, manyUpload)
 	} else { // If neither of those work, spit back an error message from the second attempt
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 }
@@ -61,4 +65,40 @@ func getOneAlbum(c *gin.Context) {
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Item ID not found", "id": id})
+}
+
+// Save data from the user to a local db file
+// Error handling in this function is ugly - not sure if there's a way to make it prettier
+func dbUpload(c *gin.Context) {
+	var upload Album
+
+	// Try to fit in the POSTed data with the Album struct schema
+	dataErr := c.ShouldBindBodyWith(&upload, binding.JSON)
+	if dataErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": dataErr.Error()})
+	}
+
+	// Try to open the DB
+	db, openErr := sql.Open("sqlite", "local.db")
+	if openErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": openErr.Error()})
+	}
+
+	// Try to insert into the DB
+	execString := fmt.Sprintf(`INSERT INTO albums (title, artist, price) VALUES ('%s', '%s', %f);`, upload.Title, upload.Artist, upload.Price)
+	result, execErr := db.Exec(execString)
+	if execErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": execErr.Error()})
+	}
+
+	// Try to get the last autoincrement row ID
+	lastIdInt, idErr := result.LastInsertId()
+	if idErr == nil { // Put the ID back in the response to the user
+		upload.ID = strconv.FormatInt(lastIdInt, 10)
+	} else {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": idErr.Error()})
+	}
+
+	// Print the result back to the user
+	c.IndentedJSON(http.StatusOK, upload)
 }

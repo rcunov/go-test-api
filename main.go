@@ -67,6 +67,7 @@ func main() {
 	router.GET("/albums", getAllAlbums)
 	router.POST("/upload", uploadOneOrManyAlbums)
 	router.GET("/albums/:id", getOneAlbum)
+	router.POST("/test", dbUpload)
 
 	// Disable proxy warning message
 	router.SetTrustedProxies(nil)
