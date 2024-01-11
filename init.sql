@@ -10,10 +10,10 @@ CREATE TABLE albums (
 INSERT INTO albums
     (title, artist, price)
 VALUES
-  	('Blue Train', 'John Coltrane', 56.99),
-	('Bleed the Future', 'AUM', 19.99),
-	('Super Hexagon', 'Chipzel', 8.0),
-	('Hirschbrunnen', 'delving', 14.99);
+    ('Blue Train', 'John Coltrane', 56.99),
+    ('Bleed the Future', 'AUM', 19.99),
+    ('Super Hexagon', 'Chipzel', 8.0),
+    ('Hirschbrunnen', 'delving', 14.99);
 
 -- .mode column
 -- .headers on
