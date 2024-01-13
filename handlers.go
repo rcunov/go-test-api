@@ -139,3 +139,43 @@ func dbGetOneAlbum(c *gin.Context) {
 	// Print the result back to the user
 	c.IndentedJSON(http.StatusOK, result)
 }
+
+func dbGetAllAlbums(c *gin.Context) {
+	// Try to open the DB
+	db, err := sql.Open("sqlite", "local.db")
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Could not open database file", "msg": err.Error()})
+		return
+	}
+
+	// Run the SELECT query
+	rows, err := db.Query("SELECT * FROM albums;")
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Could not run SELECT query on database", "msg": err.Error()})
+		return
+	}
+	// defer rows.Close() // Be sure to
+
+	allAlbums := make([]*Album, 0)
+	for rows.Next() {
+		nextAlbum := new(Album)
+		err := rows.Scan(&nextAlbum.ID, &nextAlbum.Title, &nextAlbum.Artist, &nextAlbum.Price)
+		if err != nil {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		allAlbums = append(allAlbums, nextAlbum)
+	}
+	if err := rows.Err(); err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if len(allAlbums) == 0 {
+		c.IndentedJSON(http.StatusNoContent, gin.H{"error": "No rows found"})
+		return
+	}
+
+	// Print the result back to the user
+	c.IndentedJSON(http.StatusOK, allAlbums)
+}
