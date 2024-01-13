@@ -37,7 +37,7 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 
 	// Read c.Request.Body and store the result into the context
 	// First try if the data matches the schema for a single record
-	if err := c.ShouldBindBodyWith(&oneUpload, binding.JSON); err == nil {
+	if oneUploadDataErr := c.ShouldBindBodyWith(&oneUpload, binding.JSON); oneUploadDataErr == nil {
 		// When POSTing to this endpoint, the user will submit albums without an ID since they won't know what's in the database - we need to generate those automatically
 		// The server should respond with the data it added to the database including the newly generated record ID, so we add ID's to each record in the request body and return it in the response
 
@@ -49,7 +49,7 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 		albumPersistentStorage = append(albumPersistentStorage, oneUpload)
 		// Return data back to user for verification
 		c.IndentedJSON(http.StatusCreated, oneUpload)
-	} else if err := c.ShouldBindBodyWith(&manyUpload, binding.JSON); err == nil { // If reading the data into a single record fails, try reading in multiple records
+	} else if manyUploadDataErr := c.ShouldBindBodyWith(&manyUpload, binding.JSON); manyUploadDataErr == nil { // If reading the data into a single record fails, try reading in multiple records
 		for i := range manyUpload {
 			// Set the sequential int ID value
 			var intID = len(albumPersistentStorage) + 1
@@ -61,8 +61,7 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 		// Return data back to user for verification
 		c.IndentedJSON(http.StatusCreated, manyUpload)
 	} else { // If neither of those work, spit back an error message from the second attempt
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": manyUploadDataErr.Error()})
 	}
 }
 
