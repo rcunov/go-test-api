@@ -27,6 +27,13 @@ var albumPersistentStorage = []Album{
 	{ID: "4", Title: "Hirschbrunnen", Artist: "delving", Price: 14.99},
 }
 
+// Declare global variables
+var listenPort string    // These are used for data validation with
+var listenPortIsSet bool // global scope - access in both init() and main()
+
+var db *sql.DB  // These are used for the DB so we aren't creating and destroying connections to the database
+var dbErr error // Not really an issue with the SQLite db, but when this DB is a remote connection it would start to matter at a bigger scale
+
 // Check if port set by user is valid
 func isValidPort(portStr string) bool {
 	port, err := strconv.Atoi(portStr)
@@ -40,15 +47,6 @@ func isValidPort(portStr string) bool {
 	// If the port is an integer that is not between 1-65535, then return false
 	return false
 }
-
-// Declare variables used for data validation with global scope - access in both init() and main()
-var listenPort string
-var listenPortIsSet bool
-
-// Declare global variables for the DB so we aren't creating and destroying connections to the database
-// Not really an issue with the SQLite db, but when this DB is a remote connection it would start to matter at a bigger scale
-var db *sql.DB
-var dbErr error
 
 // Perform data validation
 func init() {
@@ -69,11 +67,12 @@ func main() {
 		log.Fatal("ERROR! Could not connect to the database. Message: ", dbErr.Error())
 	}
 
-	// Set release mode
-	gin.SetMode(gin.ReleaseMode)
-
-	// Instantiate router
-	var router = gin.Default()
+	// Configure and instantiate router
+	gin.SetMode(gin.ReleaseMode)  // Router runs in debug mode by default, so change that to get rid of warning message
+	var router = gin.Default()    // Create the router
+	router.SetTrustedProxies(nil) // Disable trusted proxy warning message
+	// // Example way to set trusted proxies if I change my mind
+	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
 	// Define API endpoints
 	router.GET("/slice", getAllAlbums)                  // The functions at the /slice endpoint
@@ -84,11 +83,6 @@ func main() {
 	router.POST("/db/upload", dbUploadOneAlbum) // are for playing around with the test
 	router.GET("/db", dbGetAllAlbums)           // data in the local.db sqlite database
 	// TODO: Implement a dbUploadOneOrManyAlbums() handler
-
-	// Disable proxy warning message
-	router.SetTrustedProxies(nil)
-	// Example way to set trusted proxies if I change my mind
-	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
 	if listenPortIsSet {
