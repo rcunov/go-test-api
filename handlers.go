@@ -139,11 +139,12 @@ func dbGetOneAlbum(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
+// Get all records from the DB
 func dbGetAllAlbums(c *gin.Context) {
 	// Try to open the DB
 	db, err := sql.Open("sqlite", "local.db")
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Could not open database file", "msg": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Could not open database", "msg": err.Error()})
 		return
 	}
 
@@ -153,14 +154,15 @@ func dbGetAllAlbums(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Could not run SELECT query on database", "msg": err.Error()})
 		return
 	}
-	// defer rows.Close() // Be sure to
+	defer rows.Close() // Be sure to close the result set. Not necessary at this scale, but good practice nonetheless
 
-	allAlbums := make([]*Album, 0)
+	// Iterate over all the rows in the result set. Put the values returned into a slice of Albums
+	allAlbums := make([]*Album, 0) // Create pointer to new slice of Albums
 	for rows.Next() {
-		nextAlbum := new(Album)
-		err := rows.Scan(&nextAlbum.ID, &nextAlbum.Title, &nextAlbum.Artist, &nextAlbum.Price)
-		if err != nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		nextAlbum := new(Album)                                                                // Create pointer to new instance of an Album struct
+		err := rows.Scan(&nextAlbum.ID, &nextAlbum.Title, &nextAlbum.Artist, &nextAlbum.Price) // Put the values from this record into a temporary Album struct
+		if err != nil {                                                                        // Not sure why it would fail here, but a unique message helps track it down
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not store database record in Album struct. Potential data schema error?", "msg": err.Error()})
 			return
 		}
 		allAlbums = append(allAlbums, nextAlbum)
@@ -170,6 +172,7 @@ func dbGetAllAlbums(c *gin.Context) {
 		return
 	}
 
+	// Not really an "error", but better than returning empty JSON
 	if len(allAlbums) == 0 {
 		c.IndentedJSON(http.StatusNoContent, gin.H{"error": "No rows found"})
 		return
