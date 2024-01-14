@@ -79,13 +79,6 @@ func dbUploadOneAlbum(c *gin.Context) {
 		return
 	}
 
-	// Try to open the DB
-	db, openErr := sql.Open("sqlite", "local.db")
-	if openErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": openErr.Error()})
-		return
-	}
-
 	// Try to insert into the DB
 	result, execErr := db.Exec(`INSERT INTO albums (title, artist, price) VALUES (?, ?, ?);`, upload.Title, upload.Artist, upload.Price)
 	if execErr != nil {
@@ -117,13 +110,6 @@ func dbGetOneAlbum(c *gin.Context) {
 		return
 	}
 
-	// Try to open the DB
-	db, openErr := sql.Open("sqlite", "local.db")
-	if openErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Could not open database file", "msg": openErr.Error()})
-		return
-	}
-
 	// Try to read from the DB
 	row := db.QueryRow("SELECT * FROM albums WHERE id = ?", id)
 	if queryErr := row.Scan(&result.ID, &result.Title, &result.Artist, &result.Price); queryErr != nil {
@@ -141,13 +127,6 @@ func dbGetOneAlbum(c *gin.Context) {
 
 // Get all records from the DB
 func dbGetAllAlbums(c *gin.Context) {
-	// Try to open the DB
-	db, err := sql.Open("sqlite", "local.db")
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Could not open database", "msg": err.Error()})
-		return
-	}
-
 	// Run the SELECT query
 	rows, err := db.Query("SELECT * FROM albums;")
 	if err != nil {

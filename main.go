@@ -2,6 +2,7 @@ package main
 
 // Import dependencies
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -44,6 +45,11 @@ func isValidPort(portStr string) bool {
 var listenPort string
 var listenPortIsSet bool
 
+// Declare global variables for the DB so we aren't creating and destroying connections to the database
+// Not really an issue with the SQLite db, but when this DB is a remote connection it would start to matter at a bigger scale
+var db *sql.DB
+var dbErr error
+
 // Perform data validation
 func init() {
 	listenPort, listenPortIsSet = os.LookupEnv("listenPort") // Check if $listenPort is set and get value if so
@@ -57,6 +63,12 @@ func init() {
 }
 
 func main() {
+	// Try to open the DB
+	db, dbErr = sql.Open("sqlite", "local.db")
+	if dbErr != nil {
+		log.Fatal("ERROR! Could not connect to the database. Message: ", dbErr.Error())
+	}
+
 	// Set release mode
 	gin.SetMode(gin.ReleaseMode)
 
