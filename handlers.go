@@ -65,66 +65,6 @@ func uploadOneOrManyAlbums(c *gin.Context) {
 	}
 }
 
-// Save data from the user to a local db file
-// Error handling in this function is ugly - not sure if there's a way to make it prettier
-func dbUploadOneAlbum(c *gin.Context) {
-	// Use this variable as hacky data validation - if the data from the user fits into the schema for the Album struct,
-	// it'll match the database schema and shouldn't give any data type issues when running the INSERT statement
-	var upload Album
-
-	// Try to fit in the POSTed data with the Album struct schema
-	dataErr := c.ShouldBindBodyWith(&upload, binding.JSON)
-	if dataErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Data provided did not match database schema", "msg": dataErr.Error()})
-		return
-	}
-
-	// Try to insert into the DB
-	result, execErr := db.Exec(`INSERT INTO albums (title, artist, price) VALUES (?, ?, ?);`, upload.Title, upload.Artist, upload.Price)
-	if execErr != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": execErr.Error()})
-		return
-	}
-
-	// Try to get the last autoincrement row ID
-	lastIdInt, idErr := result.LastInsertId()
-	if idErr != nil { // Put the ID back in the response to the user
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": idErr.Error()})
-		return
-	} else {
-		upload.ID = strconv.FormatInt(lastIdInt, 10)
-	}
-
-	// Print the result back to the user
-	c.IndentedJSON(http.StatusOK, upload)
-}
-
-// Get a record from the DB
-func dbGetOneAlbum(c *gin.Context) {
-	var result Album
-	id := c.Param("id")
-
-	// Check if the ID provided by user is a valid primary key
-	if _, dataErr := strconv.Atoi(id); dataErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "ID provided is invalid", "id": id})
-		return
-	}
-
-	// Try to read from the DB
-	row := db.QueryRow("SELECT * FROM albums WHERE id = ?", id)
-	if queryErr := row.Scan(&result.ID, &result.Title, &result.Artist, &result.Price); queryErr != nil {
-		if queryErr == sql.ErrNoRows {
-			c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Item ID not found", "id": id})
-			return
-		}
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": queryErr.Error()})
-		return
-	}
-
-	// Print the result back to the user
-	c.IndentedJSON(http.StatusOK, result)
-}
-
 // Get all records from the DB
 func dbGetAllAlbums(c *gin.Context) {
 	// Run the SELECT query
@@ -159,4 +99,64 @@ func dbGetAllAlbums(c *gin.Context) {
 
 	// Print the result back to the user
 	c.IndentedJSON(http.StatusOK, allAlbums)
+}
+
+// Get a record from the DB
+func dbGetOneAlbum(c *gin.Context) {
+	var result Album
+	id := c.Param("id")
+
+	// Check if the ID provided by user is a valid primary key
+	if _, dataErr := strconv.Atoi(id); dataErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "ID provided is invalid", "id": id})
+		return
+	}
+
+	// Try to read from the DB
+	row := db.QueryRow("SELECT * FROM albums WHERE id = ?", id)
+	if queryErr := row.Scan(&result.ID, &result.Title, &result.Artist, &result.Price); queryErr != nil {
+		if queryErr == sql.ErrNoRows {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Item ID not found", "id": id})
+			return
+		}
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": queryErr.Error()})
+		return
+	}
+
+	// Print the result back to the user
+	c.IndentedJSON(http.StatusOK, result)
+}
+
+// Save data from the user to a local db file
+// Error handling in this function is ugly - not sure if there's a way to make it prettier
+func dbUploadOneAlbum(c *gin.Context) {
+	// Use this variable as hacky data validation - if the data from the user fits into the schema for the Album struct,
+	// it'll match the database schema and shouldn't give any data type issues when running the INSERT statement
+	var upload Album
+
+	// Try to fit in the POSTed data with the Album struct schema
+	dataErr := c.ShouldBindBodyWith(&upload, binding.JSON)
+	if dataErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Data provided did not match database schema", "msg": dataErr.Error()})
+		return
+	}
+
+	// Try to insert into the DB
+	result, execErr := db.Exec(`INSERT INTO albums (title, artist, price) VALUES (?, ?, ?);`, upload.Title, upload.Artist, upload.Price)
+	if execErr != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": execErr.Error()})
+		return
+	}
+
+	// Try to get the last autoincrement row ID
+	lastIdInt, idErr := result.LastInsertId()
+	if idErr != nil { // Put the ID back in the response to the user
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": idErr.Error()})
+		return
+	} else {
+		upload.ID = strconv.FormatInt(lastIdInt, 10)
+	}
+
+	// Print the result back to the user
+	c.IndentedJSON(http.StatusOK, upload)
 }
