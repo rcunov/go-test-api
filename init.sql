@@ -1,3 +1,5 @@
+-- .mode column
+
 DROP TABLE IF EXISTS albums;
 
 CREATE TABLE albums (
@@ -14,6 +16,3 @@ VALUES
     ('Bleed the Future', 'AUM', 19.99),
     ('Super Hexagon', 'Chipzel', 8.0),
     ('Hirschbrunnen', 'delving', 14.99);
-
--- .mode column
--- .headers on
