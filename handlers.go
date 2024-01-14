@@ -75,21 +75,21 @@ func dbUploadOneAlbum(c *gin.Context) {
 	// Try to fit in the POSTed data with the Album struct schema
 	dataErr := c.ShouldBindBodyWith(&upload, binding.JSON)
 	if dataErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": dataErr.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Data provided did not match database schema", "msg": dataErr.Error()})
 		return
 	}
 
 	// Try to insert into the DB
 	result, execErr := db.Exec(`INSERT INTO albums (title, artist, price) VALUES (?, ?, ?);`, upload.Title, upload.Artist, upload.Price)
 	if execErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": execErr.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": execErr.Error()})
 		return
 	}
 
 	// Try to get the last autoincrement row ID
 	lastIdInt, idErr := result.LastInsertId()
 	if idErr != nil { // Put the ID back in the response to the user
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": idErr.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": idErr.Error()})
 		return
 	} else {
 		upload.ID = strconv.FormatInt(lastIdInt, 10)
