@@ -223,5 +223,7 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 
 		// Print the result back to the user
 		c.IndentedJSON(http.StatusOK, gin.H{"msg": "Successfully uploaded multiple rows", "rows_affected": lastId})
+	} else { // If neither of those work, spit back an error message from the second attempt to fit the data schema
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": manyUploadDataErr.Error()})
 	}
 }
