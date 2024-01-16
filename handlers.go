@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"strconv"
+	"time"
 
 	_ "modernc.org/sqlite"
 
@@ -127,7 +129,7 @@ func dbGetOneAlbum(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
-// Save data from the user to a local db file
+// Save data from the user to a local db file - not currently in use
 // Error handling in this function is ugly - not sure if there's a way to make it prettier
 func dbUploadOneAlbum(c *gin.Context) {
 	// Use this variable as hacky data validation - if the data from the user fits into the schema for the Album struct,
@@ -159,4 +161,67 @@ func dbUploadOneAlbum(c *gin.Context) {
 
 	// Print the result back to the user
 	c.IndentedJSON(http.StatusOK, upload)
+}
+
+// Save data that may be one or more records from the user to a local db file
+func dbUploadOneOrManyAlbums(c *gin.Context) {
+	// Use these variables as hacky data validation - if the data from the user fits into the schema for the Album struct,
+	// it'll match the database schema and shouldn't give any data type issues when running the INSERT statement
+	var oneUpload Album
+	var manyUpload []Album
+
+	// Check if the data submitted is a single record that matches the schema
+	if oneUploadDataErr := c.ShouldBindBodyWith(&oneUpload, binding.JSON); oneUploadDataErr == nil {
+		// Try to insert into the DB
+		result, execErr := db.Exec(`INSERT INTO albums (title, artist, price) VALUES (?, ?, ?);`, oneUpload.Title, oneUpload.Artist, oneUpload.Price)
+		if execErr != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not insert into database", "msg": execErr.Error()})
+			return
+		}
+
+		// Try to get the last autoincrement row ID
+		lastIdInt, idErr := result.LastInsertId()
+		if idErr != nil { // Put the ID back in the response to the user
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not get generated ID for this record", "msg": idErr.Error()})
+			return
+		} else {
+			oneUpload.ID = strconv.FormatInt(lastIdInt, 10)
+		}
+
+		// Print the result back to the user
+		c.IndentedJSON(http.StatusOK, oneUpload)
+	} else if manyUploadDataErr := c.ShouldBindBodyWith(&manyUpload, binding.JSON); manyUploadDataErr == nil { // If reading the data into a single record fails, try reading in multiple records
+		queryStr := "INSERT INTO albums (title, artist, price) VALUES " // Create base query string to upload the data
+		var values []interface{}                                        // Store our values to be uploaded here
+
+		// Generate the full INSERT statement
+		for _, row := range manyUpload {
+			queryStr += "(?, ?, ?),"                                  // For each record that the user uploads, create a new
+			values = append(values, row.Title, row.Artist, row.Price) // set of placeholder values in the query string
+		}
+		queryStr = queryStr[0 : len(queryStr)-1] // Trim the trailing comma
+
+		// Set 5 second timeout for the query to execute
+		queryContext, queryCancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+		defer queryCancelFunc()
+
+		// Prepare query
+		queryStmt, prepareErr := db.PrepareContext(queryContext, queryStr)
+		if prepareErr != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not prepare INSERT statement", "msg": prepareErr.Error()})
+			return
+		}
+		defer queryStmt.Close()
+
+		// Execute query
+		queryResult, execErr := queryStmt.ExecContext(queryContext, values...)
+		if execErr != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not insert data to database", "msg": execErr.Error()})
+			return
+		}
+		lastId, _ := queryResult.RowsAffected()
+
+		// Print the result back to the user
+		c.IndentedJSON(http.StatusOK, gin.H{"msg": "Successfully uploaded multiple rows", "rows_affected": lastId})
+	}
 }

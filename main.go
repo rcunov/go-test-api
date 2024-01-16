@@ -79,10 +79,9 @@ func main() {
 	router.GET("/slice/:id", getOneAlbum)               // are for playing around with the test
 	router.POST("/slice/upload", uploadOneOrManyAlbums) // data in the albumPersistentStorage slice
 
-	router.GET("/db", dbGetAllAlbums)           // data in the local.db sqlite database
-	router.GET("/db/:id", dbGetOneAlbum)        // The functions at the /db endpoint
-	router.POST("/db/upload", dbUploadOneAlbum) // are for playing around with the test
-	// TODO: Implement a dbUploadOneOrManyAlbums() handler
+	router.GET("/db", dbGetAllAlbums)                  // The functions at the /db endpoint
+	router.GET("/db/:id", dbGetOneAlbum)               // are for playing around with the test
+	router.POST("/db/upload", dbUploadOneOrManyAlbums) // data in the local.db sqlite database
 
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
 	if listenPortIsSet {
