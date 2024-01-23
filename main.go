@@ -2,18 +2,21 @@ package main
 
 // Import dependencies
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // Class for albums
 type Album struct {
-	ID     string  `json:"id"`
+	gorm.Model
+	ID     string  `json:"id" gorm:"primaryKey"`
 	Title  string  `json:"title"`
 	Artist string  `json:"artist"`
 	Price  float64 `json:"price"`
@@ -31,7 +34,7 @@ var albumPersistentStorage = []Album{
 var listenPort string    // These are used for data validation with
 var listenPortIsSet bool // global scope - access in both init() and main()
 
-var db *sql.DB  // These are used for the DB so we aren't creating and destroying connections to the database
+var db *gorm.DB // These are used for the DB so we aren't creating and destroying connections to the database
 var dbErr error // Not really an issue with the SQLite db, but when this DB is a remote connection it would start to matter at a bigger scale
 
 // Check if port set by user is valid
@@ -62,10 +65,12 @@ func init() {
 
 func main() {
 	// Try to open the DB
-	db, dbErr = sql.Open("sqlite", "local.db")
+	db, dbErr = gorm.Open(sqlite.Open("local.db"), &gorm.Config{})
 	if dbErr != nil {
 		log.Fatal("ERROR! Could not connect to the database. Message: ", dbErr.Error())
 	}
+
+	db.AutoMigrate(&Album{})
 
 	// Configure and instantiate router
 	gin.SetMode(gin.ReleaseMode)  // Router runs in debug mode by default, so change that to get rid of warning message
