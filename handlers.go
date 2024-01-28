@@ -22,7 +22,6 @@ func dbGetAllAlbums(c *gin.Context) {
 		c.IndentedJSON(http.StatusNoContent, gin.H{"error": "No rows found"})
 		return
 	}
-
 	if result.Error != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
@@ -87,8 +86,19 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 			return
 		}
 
+		// Copy data into response class - this lets us make the reponse prettier for the user
+		var response []AlbumResponse
+		for _, album := range manyUpload {
+			response = append(response, AlbumResponse{
+				ID:     album.ID,
+				Title:  album.Title,
+				Artist: album.Artist,
+				Price:  album.Price,
+			})
+		}
+
 		// Print the result back to the user
-		c.IndentedJSON(http.StatusOK, manyUpload)
+		c.IndentedJSON(http.StatusOK, response)
 	} else { // If neither of those work, spit back an error message from the second attempt to fit the data schema
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": manyUploadDataErr.Error()})
 	}
