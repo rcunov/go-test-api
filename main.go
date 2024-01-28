@@ -13,21 +13,24 @@ import (
 	"gorm.io/gorm"
 )
 
-// Class for albums
+// Class for album storage
 type Album struct {
 	gorm.Model
-	ID     string  `json:"id" gorm:"primaryKey"`
+	// ID  uint (autoincrement primary key) // These commented
+	// CreatedAt datetime                   // fields come
+	// UpdatedAt datetime                   // built-in
+	// DeletedAt datetime                   // with gorm
+	Title  string
+	Artist string
+	Price  float64
+}
+
+// Class for response to user - want to rename and hide those built-in fields in the response to user
+type AlbumResponse struct {
+	ID     uint    `json:"id"`
 	Title  string  `json:"title"`
 	Artist string  `json:"artist"`
 	Price  float64 `json:"price"`
-}
-
-// Test data
-var albumPersistentStorage = []Album{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Bleed the Future", Artist: "AUM", Price: 19.99},
-	{ID: "3", Title: "Super Hexagon", Artist: "Chipzel", Price: 8.0},
-	{ID: "4", Title: "Hirschbrunnen", Artist: "delving", Price: 14.99},
 }
 
 // Declare global variables
@@ -80,10 +83,6 @@ func main() {
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
 	// Define API endpoints
-	router.GET("/slice", getAllAlbums)                  // The functions at the /slice endpoint
-	router.GET("/slice/:id", getOneAlbum)               // are for playing around with the test
-	router.POST("/slice/upload", uploadOneOrManyAlbums) // data in the albumPersistentStorage slice
-
 	router.GET("/db", dbGetAllAlbums)                  // The functions at the /db endpoint
 	router.GET("/db/:id", dbGetOneAlbum)               // are for playing around with the test
 	router.POST("/db/upload", dbUploadOneOrManyAlbums) // data in the local.db sqlite database
