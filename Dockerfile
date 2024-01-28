@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go-test-api
+RUN CGO_ENABLED=1 go build -o /go-test-api
 
 FROM scratch
 
