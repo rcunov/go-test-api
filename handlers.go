@@ -56,8 +56,15 @@ func dbGetOneAlbum(c *gin.Context) {
 		return
 	}
 
+	response := AlbumResponse{
+		ID:     album.ID,
+		Title:  album.Title,
+		Artist: album.Artist,
+		Price:  album.Price,
+	}
+
 	// Print the result back to the user
-	c.IndentedJSON(http.StatusOK, result)
+	c.IndentedJSON(http.StatusOK, response)
 }
 
 // Save data that may be one or more records from the user to a local db file
