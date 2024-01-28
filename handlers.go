@@ -27,8 +27,18 @@ func dbGetAllAlbums(c *gin.Context) {
 		return
 	}
 
+	var response []AlbumResponse
+	for _, album := range albums {
+		response = append(response, AlbumResponse{
+			ID:     album.ID,
+			Title:  album.Title,
+			Artist: album.Artist,
+			Price:  album.Price,
+		})
+	}
+
 	// Print the result back to the user
-	c.IndentedJSON(http.StatusOK, result)
+	c.IndentedJSON(http.StatusOK, response)
 }
 
 // Get a record from the DB
