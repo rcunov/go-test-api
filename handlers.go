@@ -79,7 +79,9 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 		// Try to insert into the DB
 		result := db.Create(&oneUpload)
 		if result.Error != nil {
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not insert into database", "msg": result.Error.Error()})
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"error": "Could not insert into database",
+				"msg":   result.Error.Error()})
 			return
 		}
 
@@ -99,7 +101,9 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 	} else if manyUploadDataErr := c.ShouldBindBodyWith(&manyUpload, binding.JSON); manyUploadDataErr == nil { // If reading the data into a single record fails, try reading in multiple records
 		result := db.Create(&manyUpload)
 		if result.Error != nil {
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not insert into database", "msg": result.Error.Error()})
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"error": "Could not insert into database",
+				"msg":   result.Error.Error()})
 			return
 		}
 
@@ -117,6 +121,9 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 		// Print the result back to the user
 		c.IndentedJSON(http.StatusOK, response)
 	} else { // If neither of those work, spit back an error message from the second attempt to fit the data schema
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": manyUploadDataErr.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error": "The data provided did not match the schema expected",
+			"msg":   "Title and artist should be strings, and the price should be a float",
+		})
 	}
 }
