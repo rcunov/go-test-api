@@ -25,7 +25,7 @@ type Album struct {
 	Price  float64
 }
 
-// Class for response to user - want to rename and hide those built-in fields in the response to user
+// Class for response to user - use this to rename and hide those built-in fields in the response to user
 type AlbumResponse struct {
 	ID     uint    `json:"id"`
 	Title  string  `json:"title"`
@@ -73,7 +73,7 @@ func main() {
 		log.Fatal("ERROR! Could not connect to the database. Message: ", dbErr.Error())
 	}
 
-	db.AutoMigrate(&Album{})
+	db.AutoMigrate(&Album{}) // Create database tables from our album struct
 
 	// Configure and instantiate router
 	gin.SetMode(gin.ReleaseMode)  // Router runs in debug mode by default, so change that to get rid of warning message
@@ -83,9 +83,9 @@ func main() {
 	// // router.SetTrustedProxies([]string{"192.168.1.2"})
 
 	// Define API endpoints
-	router.GET("/db", dbGetAllAlbums)                  // The functions at the /db endpoint
-	router.GET("/db/:id", dbGetOneAlbum)               // are for playing around with the test
-	router.POST("/db/upload", dbUploadOneOrManyAlbums) // data in the local.db sqlite database
+	router.GET("/db", dbGetAllAlbums)
+	router.GET("/db/:id", dbGetOneAlbum)
+	router.POST("/db/upload", dbUploadOneOrManyAlbums)
 
 	// Listen on any address using custom port if set by user, defaulting to port 8117 if not set
 	if listenPortIsSet {

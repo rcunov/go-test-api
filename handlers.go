@@ -27,6 +27,7 @@ func dbGetAllAlbums(c *gin.Context) {
 		return
 	}
 
+	// Copy data into response class - this lets us make the reponse prettier for the user
 	var response []AlbumResponse
 	for _, album := range albums {
 		response = append(response, AlbumResponse{
@@ -56,6 +57,7 @@ func dbGetOneAlbum(c *gin.Context) {
 		return
 	}
 
+	// Copy data into response class - this lets us make the reponse prettier for the user
 	response := AlbumResponse{
 		ID:     album.ID,
 		Title:  album.Title,
@@ -69,8 +71,7 @@ func dbGetOneAlbum(c *gin.Context) {
 
 // Save data that may be one or more records from the user to a local db file
 func dbUploadOneOrManyAlbums(c *gin.Context) {
-	// Use these variables as hacky data validation - if the data from the user fits into the schema for the Album struct,
-	// it'll match the database schema and shouldn't give any data type issues when running the INSERT statement
+	// Use these temp variables to check if there are one or many records to upload
 	var oneUpload Album
 	var manyUpload []Album
 
@@ -85,9 +86,6 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 			return
 		}
 
-		// Try to get the last autoincrement row ID
-		// fmt.Printf("oneUpload.ID string is %s, but uint is %s", oneUpload.ID, oneUpload.ID)
-
 		// Copy data into response class - this lets us make the reponse prettier for the user
 		response := AlbumResponse{
 			ID:     oneUpload.ID,
@@ -98,7 +96,9 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 
 		// Print the result back to the user
 		c.IndentedJSON(http.StatusOK, response)
-	} else if manyUploadDataErr := c.ShouldBindBodyWith(&manyUpload, binding.JSON); manyUploadDataErr == nil { // If reading the data into a single record fails, try reading in multiple records
+
+		// If reading the data into a single record fails, try reading in multiple records
+	} else if manyUploadDataErr := c.ShouldBindBodyWith(&manyUpload, binding.JSON); manyUploadDataErr == nil {
 		result := db.Create(&manyUpload)
 		if result.Error != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -120,7 +120,9 @@ func dbUploadOneOrManyAlbums(c *gin.Context) {
 
 		// Print the result back to the user
 		c.IndentedJSON(http.StatusOK, response)
-	} else { // If neither of those work, spit back an error message from the second attempt to fit the data schema
+
+		// If neither of those work, spit back an error message
+	} else {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"error": "The data provided did not match the schema expected",
 			"msg":   "Title and artist should be strings, and the price should be a float",
